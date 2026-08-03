@@ -22,12 +22,9 @@ def fetch():
         return resp.read().decode()
 
 def parse(text):
-    ts_match = re.search(r'Last updated at (.+?)(?:\n|<)', text)
-    timestamp = ts_match.group(1).strip() if ts_match else "unknown"
     gyms = re.findall(r'(.+?)\n\n(\d+)% full', text)
     return {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "page_updated": timestamp,
         "gyms": {name.strip(): int(pct) for name, pct in gyms},
         "num_gyms": len(gyms)
     }
@@ -45,7 +42,7 @@ def main():
         f.write(json.dumps(result, ensure_ascii=False) + "\n")
 
     jlg = result.get("gyms", {}).get("Jurong Lake Gardens ActiveSG Gym", "N/A")
-    print(f"OK | page_updated={result.get('page_updated','?')} | Jurong Lake Gardens: {jlg}%")
+    print(f"OK | {result['num_gyms']} gyms | Jurong Lake Gardens: {jlg}%")
 
 if __name__ == "__main__":
     main()
