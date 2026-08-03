@@ -1,0 +1,30 @@
+name: ActiveSG Crowd Tracker
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # every 30 minutes
+  workflow_dispatch:        # allow manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run scraper
+        run: python scraper.py
+
+      - name: Commit and push data
+        run: |
+          git config user.name "activesg-bot"
+          git config user.email "bot@activesg.local"
+          git add data.jsonl
+          git diff --staged --quiet || git commit -m "data: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
